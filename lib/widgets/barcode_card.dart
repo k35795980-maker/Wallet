@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:wallet/models/db_helper.dart';
 import '../models/dataentry.dart';
 
@@ -58,9 +57,9 @@ class BarcodeCard extends StatelessWidget {
 }
 
 // -----------------------------------------------------------------------------
-// PREMIUM LOYALTY CARD with press animation
+// PREMIUM LOYALTY CARD
 // -----------------------------------------------------------------------------
-class _PremiumLoyaltyCard extends StatefulWidget {
+class _PremiumLoyaltyCard extends StatelessWidget {
   final String name;
   final String number;
   final CardColorData colorData;
@@ -74,28 +73,12 @@ class _PremiumLoyaltyCard extends StatefulWidget {
   });
 
   @override
-  State<_PremiumLoyaltyCard> createState() => _PremiumLoyaltyCardState();
-}
-
-class _PremiumLoyaltyCardState extends State<_PremiumLoyaltyCard> {
-  bool _pressed = false;
-
-  @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: GestureDetector(
-        onTapDown: (_) {
-          setState(() => _pressed = true);
-          HapticFeedback.lightImpact();
-        },
-        onTapUp: (_) {
-          setState(() => _pressed = false);
-          widget.onTap();
-        },
-        onTapCancel: () => setState(() => _pressed = false),
-        child: AnimatedScale(
-          scale: _pressed ? 0.97 : 1.0,
-          duration: const Duration(milliseconds: 120),
+    return Material(
+      color: Colors.transparent,
+      child: RepaintBoundary(
+        child: GestureDetector(
+          onTap: onTap,
           child: AspectRatio(
             aspectRatio: 1.586,
             child: Container(
@@ -104,7 +87,7 @@ class _PremiumLoyaltyCardState extends State<_PremiumLoyaltyCard> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.colorData.primary.withValues(alpha: 0.314),
+                    color: colorData.primary.withValues(alpha: 0.314),
                     blurRadius: 16,
                     offset: const Offset(0, 8),
                   ),
@@ -122,9 +105,9 @@ class _PremiumLoyaltyCardState extends State<_PremiumLoyaltyCard> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              widget.colorData.secondary,
-                              widget.colorData.primary,
-                              widget.colorData.accent,
+                              colorData.secondary,
+                              colorData.primary,
+                              colorData.accent,
                             ],
                             stops: const [0.0, 0.6, 1.0],
                           ),
@@ -217,7 +200,7 @@ class _PremiumLoyaltyCardState extends State<_PremiumLoyaltyCard> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                widget.name.toUpperCase(),
+                                name.toUpperCase(),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -251,7 +234,7 @@ class _PremiumLoyaltyCardState extends State<_PremiumLoyaltyCard> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    widget.number,
+                                    number,
                                     style: TextStyle(
                                       fontFamily: 'Courier',
                                       color: Colors.white.withValues(alpha: 0.902),
@@ -270,24 +253,6 @@ class _PremiumLoyaltyCardState extends State<_PremiumLoyaltyCard> {
                             ],
                           ),
                         ],
-                      ),
-                    ),
-
-                    // 5. Shine Effect
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.white.withValues(alpha: 0.098),
-                              Colors.transparent,
-                              Colors.transparent,
-                            ],
-                            stops: const [0.0, 0.4, 1.0],
-                          ),
-                        ),
                       ),
                     ),
                   ],
@@ -326,9 +291,9 @@ class _RewardPatternPainter extends CustomPainter {
 }
 
 // -----------------------------------------------------------------------------
-// PREMIUM IDENTITY CARD with press animation
+// PREMIUM IDENTITY CARD
 // -----------------------------------------------------------------------------
-class _PremiumIdentityCard extends StatefulWidget {
+class _PremiumIdentityCard extends StatelessWidget {
   final String name;
   final String number;
   final CardColorData colorData;
@@ -342,28 +307,12 @@ class _PremiumIdentityCard extends StatefulWidget {
   });
 
   @override
-  State<_PremiumIdentityCard> createState() => _PremiumIdentityCardState();
-}
-
-class _PremiumIdentityCardState extends State<_PremiumIdentityCard> {
-  bool _pressed = false;
-
-  @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: GestureDetector(
-        onTapDown: (_) {
-          setState(() => _pressed = true);
-          HapticFeedback.lightImpact();
-        },
-        onTapUp: (_) {
-          setState(() => _pressed = false);
-          widget.onTap();
-        },
-        onTapCancel: () => setState(() => _pressed = false),
-        child: AnimatedScale(
-          scale: _pressed ? 0.97 : 1.0,
-          duration: const Duration(milliseconds: 120),
+    return Material(
+      color: Colors.transparent,
+      child: RepaintBoundary(
+        child: GestureDetector(
+          onTap: onTap,
           child: AspectRatio(
             aspectRatio: 1.586,
             child: Container(
@@ -372,7 +321,7 @@ class _PremiumIdentityCardState extends State<_PremiumIdentityCard> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.colorData.primary.withValues(alpha: 0.314),
+                    color: colorData.primary.withValues(alpha: 0.314),
                     blurRadius: 16,
                     offset: const Offset(0, 8),
                   ),
@@ -390,9 +339,9 @@ class _PremiumIdentityCardState extends State<_PremiumIdentityCard> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              widget.colorData.secondary,
-                              widget.colorData.primary,
-                              widget.colorData.accent,
+                              colorData.secondary,
+                              colorData.primary,
+                              colorData.accent,
                             ],
                             stops: const [0.0, 0.6, 1.0],
                           ),
@@ -478,7 +427,7 @@ class _PremiumIdentityCardState extends State<_PremiumIdentityCard> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                widget.name.toUpperCase(),
+                                name.toUpperCase(),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -512,7 +461,7 @@ class _PremiumIdentityCardState extends State<_PremiumIdentityCard> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    widget.number,
+                                    number,
                                     style: TextStyle(
                                       fontFamily: 'Courier',
                                       color: Colors.white.withValues(alpha: 0.902),
@@ -531,24 +480,6 @@ class _PremiumIdentityCardState extends State<_PremiumIdentityCard> {
                             ],
                           ),
                         ],
-                      ),
-                    ),
-
-                    // 5. Shine Effect
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.white.withValues(alpha: 0.098),
-                              Colors.transparent,
-                              Colors.transparent,
-                            ],
-                            stops: const [0.0, 0.4, 1.0],
-                          ),
-                        ),
                       ),
                     ),
                   ],
@@ -573,7 +504,10 @@ class _HolographicSeal extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
-          colors: [Colors.white.withValues(alpha: 0.098), Colors.white.withValues(alpha: 0)],
+          colors: [
+            Colors.white.withValues(alpha: 0.098),
+            Colors.white.withValues(alpha: 0),
+          ],
         ),
       ),
       child: Center(
@@ -582,7 +516,10 @@ class _HolographicSeal extends StatelessWidget {
           height: 80,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withValues(alpha: 0.098), width: 1),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.098),
+              width: 1,
+            ),
           ),
           child: Center(
             child: Icon(
@@ -647,7 +584,3 @@ class _WorldMapPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-
-// -----------------------------------------------------------------------------
-// HELPERS & PAINTERS
-// -----------------------------------------------------------------------------

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:wallet/models/db_helper.dart';
 import 'package:wallet/models/provider_helper.dart';
 import 'package:wallet/models/theme_provider.dart';
+import 'package:wallet/models/startup_settings_provider.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:wallet/pages/walletdetails.dart';
 import 'package:wallet/screens/homescreen.dart';
@@ -15,7 +16,9 @@ class Summary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final startupProvider = Provider.of<StartupSettingsProvider>(context);
     final isDark = themeProvider.isDarkMode;
+    final symbol = startupProvider.selectedCurrencySymbol;
 
     return Scaffold(
       appBar: _buildAppBar(context, isDark),
@@ -36,51 +39,54 @@ class Summary extends StatelessWidget {
             );
           }
 
-          return ListView(
+          final sections = [
+            if (summary.incompleteCards.isNotEmpty)
+              _LiquidGlassIncompleteCardsSection(
+                incompleteCards: summary.incompleteCards,
+                isDark: isDark,
+              ),
+            _LiquidGlassFinancialOverviewCard(
+              totalLimit: summary.totalLimit,
+              totalSpends: summary.totalSpends,
+              utilization: summary.utilization,
+              totalCashback: summary.totalCashback,
+              isDark: isDark,
+              symbol: symbol,
+            ),
+            const SizedBox(height: 24),
+            _LiquidGlassCardDistributionSection(
+              networkCounts: summary.networkCounts,
+              issuerCounts: summary.issuerCounts,
+              cardTypeCounts: summary.cardTypeCounts,
+              isDark: isDark,
+            ),
+            if (summary.upcomingBills.isNotEmpty)
+              _LiquidGlassUpcomingBillsSection(
+                upcomingBills: summary.upcomingBills,
+                isDark: isDark,
+              ),
+            if (summary.topCashbackCard != null ||
+                summary.highestLimitCard != null)
+              _LiquidGlassInsightsSection(
+                topCashbackCard: summary.topCashbackCard,
+                highestLimitCard: summary.highestLimitCard,
+                isDark: isDark,
+                symbol: symbol,
+              ),
+            if (summary.feeWaiverCards.isNotEmpty)
+              _LiquidGlassFeeWaiverSection(
+                feeWaiverCards: summary.feeWaiverCards,
+                isDark: isDark,
+                symbol: symbol,
+              ),
+          ];
+
+          return ListView.builder(
             padding: const EdgeInsets.all(16.0),
-            children: [
-              if (summary.incompleteCards.isNotEmpty)
-                _LiquidGlassIncompleteCardsSection(
-                  incompleteCards: summary.incompleteCards,
-                  isDark: isDark,
-                ),
-
-              _LiquidGlassFinancialOverviewCard(
-                totalLimit: summary.totalLimit,
-                totalSpends: summary.totalSpends,
-                utilization: summary.utilization,
-                totalCashback: summary.totalCashback,
-                isDark: isDark,
-              ),
-              const SizedBox(height: 24),
-
-              _LiquidGlassCardDistributionSection(
-                networkCounts: summary.networkCounts,
-                issuerCounts: summary.issuerCounts,
-                cardTypeCounts: summary.cardTypeCounts,
-                isDark: isDark,
-              ),
-
-              if (summary.upcomingBills.isNotEmpty)
-                _LiquidGlassUpcomingBillsSection(
-                  upcomingBills: summary.upcomingBills,
-                  isDark: isDark,
-                ),
-
-              if (summary.topCashbackCard != null ||
-                  summary.highestLimitCard != null)
-                _LiquidGlassInsightsSection(
-                  topCashbackCard: summary.topCashbackCard,
-                  highestLimitCard: summary.highestLimitCard,
-                  isDark: isDark,
-                ),
-
-              if (summary.feeWaiverCards.isNotEmpty)
-                _LiquidGlassFeeWaiverSection(
-                  feeWaiverCards: summary.feeWaiverCards,
-                  isDark: isDark,
-                ),
-            ],
+            itemCount: sections.length,
+            itemBuilder: (context, index) {
+              return sections[index];
+            },
           );
         },
       ),
@@ -189,6 +195,7 @@ class _LiquidGlassIncompleteCardsSection extends StatelessWidget {
 class _LiquidGlassFinancialOverviewCard extends StatelessWidget {
   final double totalLimit, totalSpends, utilization, totalCashback;
   final bool isDark;
+  final String symbol;
 
   const _LiquidGlassFinancialOverviewCard({
     required this.totalLimit,
@@ -196,6 +203,7 @@ class _LiquidGlassFinancialOverviewCard extends StatelessWidget {
     required this.utilization,
     required this.totalCashback,
     required this.isDark,
+    required this.symbol,
   });
 
   @override
@@ -212,19 +220,19 @@ class _LiquidGlassFinancialOverviewCard extends StatelessWidget {
               children: [
                 _InfoRow(
                   label: 'Total Limit',
-                  value: '₹${totalLimit.toStringAsFixed(0)}',
+                  value: '$symbol${totalLimit.toStringAsFixed(0)}',
                   isDark: isDark,
                 ),
                 const SizedBox(height: 16),
                 _InfoRow(
                   label: 'Total Spends',
-                  value: '₹${totalSpends.toStringAsFixed(0)}',
+                  value: '$symbol${totalSpends.toStringAsFixed(0)}',
                   isDark: isDark,
                 ),
                 const SizedBox(height: 16),
                 _InfoRow(
                   label: 'Est. Cashback',
-                  value: '₹${totalCashback.toStringAsFixed(2)}',
+                  value: '$symbol${totalCashback.toStringAsFixed(2)}',
                   isDark: isDark,
                   valueColor: Colors.green.shade400,
                 ),
@@ -236,6 +244,7 @@ class _LiquidGlassFinancialOverviewCard extends StatelessWidget {
             radius: 50.0,
             lineWidth: 8.0,
             percent: utilization.clamp(0.0, 1.0),
+            animation: false,
             center: Text(
               "${(utilization * 100).toStringAsFixed(1)}%",
               style: TextStyle(
@@ -433,11 +442,13 @@ class _LiquidGlassInsightsSection extends StatelessWidget {
   final Wallet? topCashbackCard;
   final Wallet? highestLimitCard;
   final bool isDark;
+  final String symbol;
 
   const _LiquidGlassInsightsSection({
     this.topCashbackCard,
     this.highestLimitCard,
     required this.isDark,
+    required this.symbol,
   });
 
   @override
@@ -466,7 +477,7 @@ class _LiquidGlassInsightsSection extends StatelessWidget {
             _InfoRow(
               label: 'Highest Limit',
               value:
-                  "${highestLimitCard!.name} (₹${highestLimitCard!.maxlimit ?? '0'})",
+                  "${highestLimitCard!.name} ($symbol${highestLimitCard!.maxlimit ?? '0'})",
               isDark: isDark,
             ),
         ],
@@ -479,10 +490,12 @@ class _LiquidGlassInsightsSection extends StatelessWidget {
 class _LiquidGlassFeeWaiverSection extends StatelessWidget {
   final List<Wallet> feeWaiverCards;
   final bool isDark;
+  final String symbol;
 
   const _LiquidGlassFeeWaiverSection({
     required this.feeWaiverCards,
     required this.isDark,
+    required this.symbol,
   });
 
   @override
@@ -547,7 +560,7 @@ class _LiquidGlassFeeWaiverSection extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    "₹${spends.toStringAsFixed(0)} / ₹${waiver.toStringAsFixed(0)}",
+                    "$symbol${spends.toStringAsFixed(0)} / $symbol${waiver.toStringAsFixed(0)}",
                     style: TextStyle(
                       fontSize: 12,
                       color: textColor.withValues(alpha: 0.6),

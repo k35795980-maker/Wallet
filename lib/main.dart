@@ -102,11 +102,11 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  late Animation<double> _iconSlideAnimation;
 
   @override
   void initState() {
     super.initState();
-
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -115,14 +115,21 @@ class _SplashScreenState extends State<SplashScreen>
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
       ),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController,
-        curve: const Interval(0.0, 0.6, curve: Curves.easeOutBack),
+        curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
+      ),
+    );
+
+    _iconSlideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.2, 0.7, curve: Curves.easeOutCubic),
       ),
     );
 
@@ -145,9 +152,6 @@ class _SplashScreenState extends State<SplashScreen>
       listen: false,
     );
 
-    // Small delay for splash animation
-    await Future.delayed(const Duration(milliseconds: 600));
-
     if (startupProvider.showAuthenticationScreen) {
       await _performAuthentication();
     } else {
@@ -163,19 +167,9 @@ class _SplashScreenState extends State<SplashScreen>
           pageBuilder: (context, animation, secondaryAnimation) =>
               const HomeScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            final curved = CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-            );
-            return FadeTransition(
-              opacity: curved,
-              child: ScaleTransition(
-                scale: Tween<double>(begin: 0.96, end: 1.0).animate(curved),
-                child: child,
-              ),
-            );
+            return child;
           },
-          transitionDuration: const Duration(milliseconds: 500),
+          transitionDuration: Duration.zero,
         ),
       );
     }
@@ -209,71 +203,93 @@ class _SplashScreenState extends State<SplashScreen>
     final isDark = themeProvider.isDarkMode;
     final textColor = isDark ? Colors.white : Colors.black;
 
-    // Set status bar style
     SystemChrome.setSystemUIOverlayStyle(
       isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
     );
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
-      body: Center(
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return FadeTransition(
-              opacity: _fadeAnimation,
-              child: ScaleTransition(
-                scale: _scaleAnimation,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Icon container
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(32),
-                        color: isDark
-                            ? const Color(0xFF1A1A1A)
-                            : const Color(0xFFF0F0F0),
-                        border: Border.all(
+      body: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Opacity(
+                  opacity: _fadeAnimation.value,
+                  child: Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: Transform.translate(
+                      offset: Offset(0, _iconSlideAnimation.value),
+                      child: Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(32),
                           color: isDark
-                              ? const Color(0xFF2A2A2A)
-                              : const Color(0xFFE0E0E0),
-                          width: 0.5,
+                              ? const Color(0xFF1A1A1A)
+                              : const Color(0xFFF0F0F0),
+                          border: Border.all(
+                            color: isDark
+                                ? const Color(0xFF2A2A2A)
+                                : const Color(0xFFE0E0E0),
+                            width: 0.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: textColor.withValues(alpha: 0.08),
+                              blurRadius: 24,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.wallet_rounded,
+                            size: 56,
+                            color: textColor,
+                          ),
                         ),
                       ),
-                      child: Center(
-                        child: Icon(
-                          Icons.wallet_rounded,
-                          size: 56,
-                          color: textColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Opacity(
+                  opacity: _fadeAnimation.value,
+                  child: Transform.translate(
+                    offset: Offset(0, _iconSlideAnimation.value * 1.2),
+                    child: Column(
+                      children: [
+                        Text(
+                          'WALLET',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                            letterSpacing: 8,
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Secure • Simple • Smart',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDark ? Colors.white54 : Colors.black45,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 32),
-                    // App name
-                    Text(
-                      'WALLET',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                        letterSpacing: 8,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Secure • Simple • Smart',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDark ? Colors.white54 : Colors.black45,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    // Loading indicator
-                    Container(
+                  ),
+                ),
+                const SizedBox(height: 48),
+                Opacity(
+                  opacity: _fadeAnimation.value,
+                  child: Transform.translate(
+                    offset: Offset(0, _iconSlideAnimation.value * 1.5),
+                    child: Container(
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
@@ -290,12 +306,12 @@ class _SplashScreenState extends State<SplashScreen>
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          },
-        ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
